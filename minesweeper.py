@@ -9,32 +9,31 @@ import path_util  # needed for getting path of project media files, when script 
 from random import choice
 
 
-# PROJECT_PATH = path_util.get_project_directory()
-# print(PROJECT_PATH)
+PROJECT_PATH = path_util.get_project_directory()
+
+pygame.init()
+pygame.display.init()
+pygame.mixer.pre_init(44100, -16, 2, 512)
+pygame.mixer.init()
+
+screen_width = 1280
+screen_height = 720
+
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("minesweeper in pygame")
+clock = pygame.time.Clock()
 
 
-# pygame.init()
-# pygame.display.init()
-# pygame.mixer.pre_init(44100, -16, 2, 512)
-# pygame.mixer.init()
+# loading in fonts
+pygame.font.init()
 
-# screen_width = 1280
-# screen_height = 720
+FONT = pygame.font.SysFont("Sans", 20)
 
-# screen = pygame.display.set_mode((screen_width, screen_height))
-# clock = pygame.time.Clock()
-
-
-# # loading in fonts
-# pygame.font.init()
-
-# FONT = pygame.font.SysFont("Sans", 20)
-
-# roboto_large = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-Bold.ttf', 72)
-# roboto_medium = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-Bold.ttf', 24)
-# roboto_small = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-Bold.ttf', 20)
-# roboto_italic_medium = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-BoldItalic.ttf', 28)
-# roboto_italic_small = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-BoldItalic.ttf', 18)
+roboto_large = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-Bold.ttf', 72)
+roboto_medium = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-Bold.ttf', 24)
+roboto_small = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-Bold.ttf', 20)
+roboto_italic_medium = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-BoldItalic.ttf', 28)
+roboto_italic_small = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-BoldItalic.ttf', 18)
 
 # # Circle and GUI colors
 # GREEN = pygame.Color("#57CC99")
@@ -68,13 +67,14 @@ from random import choice
 sounds_group = []
 
 WAV_CLICK = pygame.mixer.Sound(f'{PROJECT_PATH}/sounds/click_tile.wav')
-WAV_ONE.set_volume(0.3)
-sounds_group.append(WAV_ONE)
+WAV_CLICK.set_volume(0.3)
+sounds_group.append(WAV_CLICK)
 WAV_MINE = pygame.mixer.Sound(f'{PROJECT_PATH}/sounds/click_mine.wav')
 WAV_MINE.set_volume(0.3)
 sounds_group.append(WAV_MINE)
 WAV_CLEAR = pygame.mixer.Sound(f'{PROJECT_PATH}/sounds/click_mine.wav')
 WAV_CLEAR.set_volume(0.3)
+sounds_group.append(WAV_CLEAR)
 
 # loading tile images
 IMG_TILE_BLOCKED = pygame.image.load(f'{PROJECT_PATH}/img/tile_blocked.png')
@@ -84,6 +84,11 @@ IMG_TILE_2 = pygame.image.load(f'{PROJECT_PATH}/img/tile2.png')
 IMG_TILE_3 = pygame.image.load(f'{PROJECT_PATH}/img/tile3.png')
 IMG_TILE_4 = pygame.image.load(f'{PROJECT_PATH}/img/tile4.png')
 
+TILESIZE = IMG_TILE_0.get_width()
+LEVEL_WIDTH = 8
+LEVEL_HEIGHT= 8
+LEVEL_MINES = 20
+
 gameover = False
 run = False
 
@@ -91,9 +96,13 @@ def print_map(tilemap):
     for row in tilemap:
         print(row)
 
-def generate_map(width=8, height=8, mines=20):
-    possible = [' ','0','1','2','3','4']
-    # ' ' for clear, '0' for blocked, '4' for mines, else for numeral integers
+def generate_map():
+    global LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_MINES;
+    width = LEVEL_WIDTH; height = LEVEL_HEIGHT; mines = LEVEL_MINES;
+    
+    possible = ['0','1','2','3','4']
+    # '0' for clear, '4' for mines, else for numeral integers
+    # by default, "blocked" tiles are layered on top of these tiles, for user to click
     tilemap = []
     mines = mines
     i = choice(possible)
@@ -118,13 +127,28 @@ def generate_map(width=8, height=8, mines=20):
     return tilemap
 
 tilemap = generate_map()
-print_map(tilemap)
+# print_map(tilemap)
 
-def render_tilemap():
-    pass
+def render_tilemap(tilemap):
+    global LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_MINES;
+    global TILESIZE;
+    width = LEVEL_WIDTH; height = LEVEL_HEIGHT; mines = LEVEL_MINES;
 
-def render_tiles():
-    pass
+    for rowI in range(height):
+        for columnI in range(width):
+            render_tile(tilemap[rowI][columnI], rowI * TILESIZE, columnI*TILESIZE)
+
+def render_tile(tile_type, pos_x, pos_y):
+    if tile_type == '0':
+        screen.blit(IMG_TILE_0, (pos_x, pos_y))
+    if tile_type == '1':
+        screen.blit(IMG_TILE_1, (pos_x, pos_y))
+    if tile_type == '2':
+        screen.blit(IMG_TILE_2, (pos_x, pos_y))
+    if tile_type == '3':
+        screen.blit(IMG_TILE_3, (pos_x, pos_y))
+    if tile_type == '4':
+        screen.blit(IMG_TILE_4, (pos_x, pos_y))
 
 def game_update():
     pass
@@ -135,14 +159,38 @@ def game_input():
 def game_over():
     pass
 
+run = True
+
 def game_main():
-    pass
+    global run
 
-# while run:
-#     render_navbar()
-#     render_map()
+    render_tilemap(tilemap)
+    render_tile('1', 0*TILESIZE, 0*TILESIZE)
+    render_tile('2', 1*TILESIZE, 1*TILESIZE)
+    render_tile('3', 2*TILESIZE, 1*TILESIZE)
+    render_tile('4', 3*TILESIZE, 1*TILESIZE)
 
-# pygame.display.update()
-# clock.tick(60)
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                key = pygame.key.get_pressed()
+                if (key[pygame.K_LCTRL] or key[pygame.K_LALT]) and (key[pygame.K_q] or key[pygame.K_w]):
+                    pygame.quit()
+                    sys.exit()
+                    quit()
+                if key[pygame.K_ESCAPE]:
+                    pygame.quit()
+                    sys.exit()
+                    quit()
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+                quit()
 
-# pygame.quit()
+
+        pygame.display.update()
+        clock.tick(60)
+
+    pygame.quit()
+
+game_main()
