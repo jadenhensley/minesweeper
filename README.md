@@ -1,4 +1,6 @@
-# README.md template
+# pynesweeper
+
+Minesweeper clone written using pygame, as a side-project.
 
 # Usage
 
