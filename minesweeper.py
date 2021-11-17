@@ -33,6 +33,8 @@ roboto_medium = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-Bold.ttf', 24)
 roboto_small = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-Bold.ttf', 20)
 roboto_italic_medium = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-BoldItalic.ttf', 28)
 roboto_italic_small = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-BoldItalic.ttf', 18)
+gravity_bold = pygame.font.Font(f'{PROJECT_PATH}/fonts/GravityBold8.ttf', 32)
+gravity_bold_large = pygame.font.Font(f'{PROJECT_PATH}/fonts/GravityBold8.ttf', 72)
 
 # # Circle and GUI colors
 # GREEN = pygame.Color("#57CC99")
@@ -82,6 +84,8 @@ IMG_TILE_1 = pygame.image.load(f'{PROJECT_PATH}/img/tile1.png')
 IMG_TILE_2 = pygame.image.load(f'{PROJECT_PATH}/img/tile2.png')
 IMG_TILE_3 = pygame.image.load(f'{PROJECT_PATH}/img/tile3.png')
 IMG_TILE_4 = pygame.image.load(f'{PROJECT_PATH}/img/tile4.png')
+IMG_BTN_NEWGAME = pygame.image.load(f'{PROJECT_PATH}/img/button_newgame.png')
+IMG_BTN_EXITGAME = pygame.image.load(f'{PROJECT_PATH}/img/button_exitgame.png')
 
 TILESIZE = IMG_TILE_0.get_width()
 LEVEL_WIDTH = 8
@@ -91,9 +95,9 @@ LEVEL_MINES = 20
 SCORE_COUNT = 0
 CLICK_COUNT = 0
 
-
 GAMEOVER = False
 RUN = False
+ABLE_TO_CLICK = True
 
 def print_map(tilemap):
     for row in tilemap:
@@ -129,17 +133,6 @@ def generate_map():
 
     return tilemap
 
-tilemap = generate_map()
-# print_map(tilemap)
-
-def render_tilemap(tilemap):
-    global LEVEL_WIDTH, LEVEL_HEIGHT, LEVEL_MINES;
-    global TILESIZE;
-    width = LEVEL_WIDTH; height = LEVEL_HEIGHT; mines = LEVEL_MINES;
-
-    for rowI in range(height):
-        for columnI in range(width):
-            render_tile(tilemap[rowI][columnI], rowI * TILESIZE, columnI*TILESIZE)
 
 def render_tile(tile_type, pos_x, pos_y):
     if tile_type == '0':
@@ -167,6 +160,7 @@ class Tile():
             self.image = self.tiles[3]
         if tile_type == '4':
             self.image = self.tiles[4]
+        self.tile_type = tile_type
         self.cover_image = self.tiles[5] # image for default tile state, before clicked.
         self.current_image = self.cover_image
         self.clicked = False
@@ -178,15 +172,21 @@ class Tile():
         self.screen = surface
     
     def click(self):
-        global SCORE_COUNT
+        global SCORE_COUNT, ABLE_TO_CLICK, GAMEOVER
 
 
-        self.current_image = self.image
-        if self.clicked == False:
-            WAV_CLICK.play()
-            SCORE_COUNT += 1
-            # print(SCORE_COUNT)
-            self.clicked = True
+        if self.clicked == False and ABLE_TO_CLICK == True:
+            self.current_image = self.image
+            if self.tile_type != '4':
+                WAV_CLICK.play()
+                SCORE_COUNT += 1
+                # print(SCORE_COUNT)
+                self.clicked = True
+            else:
+                WAV_MINE.play()
+                self.clicked = True
+                ABLE_TO_CLICK = False
+                GAMEOVER = True
 
     
     def draw(self):
@@ -208,27 +208,33 @@ class Tile():
 def game_over():
     pass
 
-RUN = True
-
-def game_main():
-    global RUN
-
-    render_tilemap(tilemap)
-    render_tile('1', 0*TILESIZE, 0*TILESIZE)
-    render_tile('2', 1*TILESIZE, 1*TILESIZE)
-    render_tile('3', 2*TILESIZE, 1*TILESIZE)
-    render_tile('4', 3*TILESIZE, 1*TILESIZE)
-
+def generate_level():
+    tilemap = generate_map()
 
     tile_group = []
-
-    # lets generate the tilemap
 
     for rowI in range(LEVEL_HEIGHT):
         for columnI in range(LEVEL_WIDTH):
             render_tile(tilemap[rowI][columnI], rowI * TILESIZE, columnI*TILESIZE)
             t = Tile(tilemap[rowI][columnI], rowI * TILESIZE, columnI * TILESIZE)
             tile_group.append(t)
+
+    return tile_group
+
+
+RUN = True
+
+def game_main():
+    global RUN, SCORE_COUNT, GAMEOVER, ABLE_TO_CLICK, CLICK_COUNT
+    
+    buttonNewGame = Button(screen, screen_width - 350, screen_height - 300, IMG_BTN_NEWGAME)
+    buttonExitGame = Button(screen, screen_width - 350, screen_height - 200, IMG_BTN_EXITGAME)
+
+    tile_group = []
+
+    # lets generate the tilemap
+
+    tile_group = generate_level()
 
 
 
@@ -258,7 +264,24 @@ def game_main():
         for tile in tile_group:
             tile.draw()
 
-        draw_text(screen, f"score: {SCORE_COUNT}", roboto_medium, (220, 30, 30), 600, 200)
+        draw_text(screen, f"score: {SCORE_COUNT}", gravity_bold, (225, 255, 255), 600, 200)
+
+        if buttonNewGame.draw():
+            SCORE_COUNT = 0
+            GAMEOVER = False
+            ABLE_TO_CLICK = True
+            tile_group = []
+            tile_group = generate_level()
+
+
+        if buttonExitGame.draw():
+            pygame.quit()
+            sys.exit()
+            quit()
+
+
+        if GAMEOVER:
+            draw_text(screen, f"GAME OVER!!!", gravity_bold_large, (220, 30, 30), 100, 600)
 
 
         pygame.display.update()
