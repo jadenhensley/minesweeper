@@ -89,6 +89,8 @@ LEVEL_WIDTH = 8
 LEVEL_HEIGHT= 8
 LEVEL_MINES = 20
 
+USER_SCORE = 0
+
 gameover = False
 run = False
 
@@ -150,6 +152,56 @@ def render_tile(tile_type, pos_x, pos_y):
     if tile_type == '4':
         screen.blit(IMG_TILE_4, (pos_x, pos_y))
 
+class Tile():
+    def __init__(self, tile_type, pos_x, pos_y, surface=screen):
+        global IMG_TILE_0, IMG_TILE_1, IMG_TILE_2, IMG_TILE_3, IMG_TILE_4, IMG_TILE_BLOCKED;
+        self.tiles = (IMG_TILE_0, IMG_TILE_1, IMG_TILE_2, IMG_TILE_3, IMG_TILE_4, IMG_TILE_BLOCKED)
+        if tile_type == '0':
+            self.image = self.tiles[0]
+        if tile_type == '1':
+            self.image = self.tiles[1]
+        if tile_type == '2':
+            self.image = self.tiles[2]
+        if tile_type == '3':
+            self.image = self.tiles[3]
+        if tile_type == '4':
+            self.image = self.tiles[4]
+        self.cover_image = self.tiles[5] # image for default tile state, before clicked.
+        self.current_image = self.cover_image
+        self.clicked = False
+        self.x = pos_x
+        self.y = pos_y
+        self.screen = surface
+    
+    def click(self):
+        global USER_SCORE
+        self.current_image = self.image
+        if self.clicked == False:
+            WAV_CLICK.play()
+            USER_SCORE += 1
+            print(USER_SCORE)
+            self.clicked = True
+
+    
+    def draw(self):
+        self.screen.blit(self.current_image, (self.x, self.y))
+
+        collision = pygame.Surface((self.current_image.get_width(), self.current_image.get_height()))
+        collision.set_alpha(128)
+        collision.fill((255,255,255))
+        print(self.x)
+        print(self.y)
+        self.screen.blit(collision, (self.x, self.y))
+
+
+        pos = pygame.mouse.get_pos()
+
+        if collision.get_rect().collidepoint(pos):
+            print('colliding')
+            if pygame.mouse.get_pressed()[0] == 1:
+                self.click()
+
+
 def game_update():
     pass
 
@@ -170,6 +222,18 @@ def game_main():
     render_tile('3', 2*TILESIZE, 1*TILESIZE)
     render_tile('4', 3*TILESIZE, 1*TILESIZE)
 
+
+    tile_group = []
+
+    new = Tile('1', 64*0, 64)
+    newb = Tile('2', 64*1, 64)
+    newc = Tile('3', 64*2, 64)
+    newd = Tile('4', 64*3, 64)
+    tile_group.append(new)
+    tile_group.append(newb)
+    tile_group.append(newc)
+    tile_group.append(newd)
+
     while run:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -187,7 +251,11 @@ def game_main():
                 sys.exit()
                 quit()
 
-
+        
+        # new.draw()
+        for tile in tile_group:
+            tile.draw()
+            
         pygame.display.update()
         clock.tick(60)
 
