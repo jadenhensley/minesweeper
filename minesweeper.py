@@ -90,7 +90,7 @@ IMG_BTN_EXITGAME = pygame.image.load(f'{PROJECT_PATH}/img/button_exitgame.png')
 TILESIZE = IMG_TILE_0.get_width()
 LEVEL_WIDTH = 8
 LEVEL_HEIGHT= 8
-LEVEL_MINES = 20
+LEVEL_MINES = 8
 
 SCORE_COUNT = 0
 CLICK_COUNT = 0
@@ -178,8 +178,15 @@ class Tile():
         if self.clicked == False and ABLE_TO_CLICK == True:
             self.current_image = self.image
             if self.tile_type != '4':
+                if self.tile_type == '1':
+                    SCORE_COUNT += 1
+                if self.tile_type == '2':
+                    SCORE_COUNT += 2
+                if self.tile_type == '3':
+                    SCORE_COUNT += 3
+                if self.tile_type == '0':
+                    pass
                 WAV_CLICK.play()
-                SCORE_COUNT += 1
                 # print(SCORE_COUNT)
                 self.clicked = True
             else:
