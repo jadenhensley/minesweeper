@@ -171,6 +171,9 @@ class Tile():
         self.clicked = False
         self.x = pos_x
         self.y = pos_y
+        self.rect = self.current_image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
         self.screen = surface
     
     def click(self):
@@ -179,27 +182,26 @@ class Tile():
         if self.clicked == False:
             WAV_CLICK.play()
             USER_SCORE += 1
-            print(USER_SCORE)
+            # print(USER_SCORE)
             self.clicked = True
 
     
     def draw(self):
         self.screen.blit(self.current_image, (self.x, self.y))
 
-        collision = pygame.Surface((self.current_image.get_width(), self.current_image.get_height()))
-        collision.set_alpha(128)
-        collision.fill((255,255,255))
-        print(self.x)
-        print(self.y)
+        # print(self.x)
+        # print(self.y)
         self.screen.blit(collision, (self.x, self.y))
 
 
         pos = pygame.mouse.get_pos()
 
-        if collision.get_rect().collidepoint(pos):
-            print('colliding')
+        if self.rect.collidepoint(pos):
+            # print('colliding')
             if pygame.mouse.get_pressed()[0] == 1:
                 self.click()
+
+                
 
 
 def game_update():
@@ -252,10 +254,9 @@ def game_main():
                 quit()
 
         
-        # new.draw()
         for tile in tile_group:
             tile.draw()
-            
+
         pygame.display.update()
         clock.tick(60)
 
