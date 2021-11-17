@@ -16,7 +16,7 @@ pygame.display.init()
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.mixer.init()
 
-screen_width = 1280
+screen_width = 900
 screen_height = 720
 
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -27,7 +27,6 @@ clock = pygame.time.Clock()
 # loading in fonts
 pygame.font.init()
 
-FONT = pygame.font.SysFont("Sans", 20)
 
 roboto_large = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-Bold.ttf', 72)
 roboto_medium = pygame.font.Font(f'{PROJECT_PATH}/fonts/Roboto-Bold.ttf', 24)
@@ -89,10 +88,12 @@ LEVEL_WIDTH = 8
 LEVEL_HEIGHT= 8
 LEVEL_MINES = 20
 
-USER_SCORE = 0
+SCORE_COUNT = 0
+CLICK_COUNT = 0
 
-gameover = False
-run = False
+
+GAMEOVER = False
+RUN = False
 
 def print_map(tilemap):
     for row in tilemap:
@@ -177,12 +178,14 @@ class Tile():
         self.screen = surface
     
     def click(self):
-        global USER_SCORE
+        global SCORE_COUNT
+
+
         self.current_image = self.image
         if self.clicked == False:
             WAV_CLICK.play()
-            USER_SCORE += 1
-            # print(USER_SCORE)
+            SCORE_COUNT += 1
+            # print(SCORE_COUNT)
             self.clicked = True
 
     
@@ -191,7 +194,6 @@ class Tile():
 
         # print(self.x)
         # print(self.y)
-        self.screen.blit(collision, (self.x, self.y))
 
 
         pos = pygame.mouse.get_pos()
@@ -203,20 +205,13 @@ class Tile():
 
                 
 
-
-def game_update():
-    pass
-
-def game_input():
-    pass
-
 def game_over():
     pass
 
-run = True
+RUN = True
 
 def game_main():
-    global run
+    global RUN
 
     render_tilemap(tilemap)
     render_tile('1', 0*TILESIZE, 0*TILESIZE)
@@ -227,16 +222,19 @@ def game_main():
 
     tile_group = []
 
-    new = Tile('1', 64*0, 64)
-    newb = Tile('2', 64*1, 64)
-    newc = Tile('3', 64*2, 64)
-    newd = Tile('4', 64*3, 64)
-    tile_group.append(new)
-    tile_group.append(newb)
-    tile_group.append(newc)
-    tile_group.append(newd)
+    # lets generate the tilemap
 
-    while run:
+    for rowI in range(LEVEL_HEIGHT):
+        for columnI in range(LEVEL_WIDTH):
+            render_tile(tilemap[rowI][columnI], rowI * TILESIZE, columnI*TILESIZE)
+            t = Tile(tilemap[rowI][columnI], rowI * TILESIZE, columnI * TILESIZE)
+            tile_group.append(t)
+
+
+
+
+
+    while RUN:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 key = pygame.key.get_pressed()
@@ -253,9 +251,15 @@ def game_main():
                 sys.exit()
                 quit()
 
+        screen.fill((0,0,0))
+        
+
         
         for tile in tile_group:
             tile.draw()
+
+        draw_text(screen, f"score: {SCORE_COUNT}", roboto_medium, (220, 30, 30), 600, 200)
+
 
         pygame.display.update()
         clock.tick(60)
